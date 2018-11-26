@@ -18,13 +18,21 @@ pub fn create_app(db: Addr<PgExecutor>) -> App<AppState> {
         .resource("/", |r| {
             r.method(Method::GET).with(index_handler)
         })
+        .resource("/test/", |r| {
+            r.method(Method::GET).with(test_handler)
+        })
 }
 
 use actix_web::{
+    AsyncResponder,
+    FutureResponse,
     HttpRequest,
     HttpResponse,
     Result as ActixResult,
+    State,
 };
+use futures::future::Future;
+
 pub fn index_handler(_req: HttpRequest<AppState>) -> ActixResult<HttpResponse> {
     Ok(HttpResponse::Ok().json(
         Status {
@@ -38,4 +46,20 @@ pub fn index_handler(_req: HttpRequest<AppState>) -> ActixResult<HttpResponse> {
 struct Status {
     status: String,
     version: String,
+}
+
+pub fn test_handler(state: State<AppState>) -> FutureResponse<HttpResponse> {
+    use crate::pg::PgTest;
+
+    state
+        .db
+        .send(PgTest{})
+        .from_err()
+        .and_then(|db_response| {
+            match db_response {
+                Ok(n) => Ok(HttpResponse::Ok().json(n)),
+                Err(_) => Ok(HttpResponse::NotFound().finish()),
+            }
+        })
+        .responder()
 }
