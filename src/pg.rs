@@ -17,6 +17,7 @@ impl Actor for PgExecutor {
     type Context = SyncContext<Self>;
 }
 
+#[derive(Debug)]
 pub struct PgQuery {
     pub schema: String,
     pub table: String,
@@ -41,7 +42,7 @@ impl Handler<PgQuery> for PgExecutor {
             msg.table,
         );
 
-        info!("query: {:?}", query);
+        info!("query: {:?}, {:?}", query, msg);
 
         let rows = &conn.query(&query, &[])?;
 
