@@ -15,33 +15,37 @@ impl Actor for PgExecutor {
     type Context = SyncContext<Self>;
 }
 
-pub struct PgTest {
+pub struct PgQuery {
     pub schema: String,
     pub table: String,
+    pub select: String,
 }
 
-impl Message for PgTest {
+impl Message for PgQuery {
     type Result = Result<i32, Error>;
 }
 
-impl Handler<PgTest> for PgExecutor {
+impl Handler<PgQuery> for PgExecutor {
     type Result = Result<i32, Error>;
 
-    fn handle(&mut self, msg: PgTest, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: PgQuery, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get()?;
 
-        let query = format!("select st, agep from {}.{} limit 5",
+        let query = format!("select {} from {}.{} limit 5",
+            msg.select,
             msg.schema,
             msg.table,
         );
+
+        info!("query: {:?}", query);
 
         let res = &conn.query(&query, &[])?;
 
         let mut agep: i32 = 0;
         for row in res {
-            info!("{:?}", row);
+            //info!("{:?}", row);
             agep = row.get(1);
-            info!("{:?}", agep);
+            //info!("{:?}", agep);
         }
 
         Ok(agep)

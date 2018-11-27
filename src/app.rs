@@ -4,7 +4,6 @@ use actix_web::{
     middleware,
     App,
 };
-use serde_derive::Serialize;
 
 use crate::pg::PgExecutor;
 
@@ -29,11 +28,13 @@ use actix_web::{
     HttpRequest,
     HttpResponse,
     Path,
+    Query,
     Result as ActixResult,
     State,
 };
 use futures::future::Future;
 use log::*;
+use serde_derive::{Serialize, Deserialize};
 
 pub fn index_handler(_req: HttpRequest<AppState>) -> ActixResult<HttpResponse> {
     Ok(HttpResponse::Ok().json(
@@ -51,16 +52,22 @@ struct Status {
 }
 
 pub fn test_handler(
-    (state, schema_table): (State<AppState>, Path<(String, String)>)
+    (state, schema_table, query): (State<AppState>, Path<(String, String)>, Query<QueryOpt>)
     ) -> FutureResponse<HttpResponse>
 {
     let (schema, table) = schema_table.into_inner();
     info!("schema: {}, table: {}", schema, table);
-    use crate::pg::PgTest;
+    use crate::pg::PgQuery;
+
+    let pg_query = PgQuery {
+        schema,
+        table,
+        select: query.select.to_owned(),
+    };
 
     state
         .db
-        .send(PgTest{ schema, table })
+        .send(pg_query)
         .from_err()
         .and_then(|db_response| {
             match db_response {
@@ -69,4 +76,9 @@ pub fn test_handler(
             }
         })
         .responder()
+}
+
+#[derive(Debug, Deserialize)]
+pub struct QueryOpt {
+    select: String,
 }
