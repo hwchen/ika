@@ -5,7 +5,7 @@ This software is based on the ideas of postgrest, in rust.
 
 One goal is to explore the line between REST api and olap-type capabilities such as aggregation, based only on the metadata provided in postgres.
 
-# Usage
+# Setup
 Uses rust 2018 edition, which is (as of nov 26 2018) nightly only. Will be stable as of Dec 6.
 
 So make sure you:
@@ -14,6 +14,13 @@ $ rustup install nightly
 $ rustup default nightly
 ```
 
+You also need to have the `DATABASE_URL` env var set to your postgres db url. (This option can also be set through a cli option).
+```
+DATABASE_URL=postgres://user:pass@localhost/dbname
+
+```
+
+# Usage
 To run the server (also check justfile if you have `just` and `watchexec` installed:
 ```
 $ cargo build && RUST_LOG=info ./target/debug/ika
