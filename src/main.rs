@@ -6,9 +6,10 @@
 use actix::{Addr, SyncArbiter};
 use actix_web::server;
 use dotenv::dotenv;
-use failure::Error;
+use failure::{Error, format_err};
 use r2d2_postgres::{TlsMode, PostgresConnectionManager};
 use std::env;
+use structopt::StructOpt;
 
 mod app;
 mod pg;
@@ -20,12 +21,15 @@ fn main() -> Result<(), Error> {
 
     // Configuration
     dotenv().ok();
+    let opt = Opt::from_args();
 
     // add option in structopt
-    let server_addr = "127.0.0.1:4000";
+    let server_addr = opt.address.unwrap_or("127.0.0.1:4000".to_owned());
 
     // add option in structopt
-    let pg_database_url = env::var("DATABASE_URL").expect("No DATABASE_URL Found");
+    let pg_database_url = env::var("DATABASE_URL")
+        .or(opt.database_url.ok_or(format_err!("")))
+        .expect("No DATABASE_URL Found");
 
     let sys = actix::System::new("ika");
 
@@ -38,7 +42,7 @@ fn main() -> Result<(), Error> {
     });
 
     server::new(move|| app::create_app(pg_address.clone()))
-        .bind(server_addr)
+        .bind(&server_addr)
         .expect(&format!("cannot find to {}", server_addr))
         .start();
 
@@ -47,4 +51,13 @@ fn main() -> Result<(), Error> {
     sys.run();
 
     Ok(())
+}
+
+#[derive(Debug, StructOpt)]
+#[structopt(name="ika")]
+struct Opt {
+    #[structopt(short="a", long="addr")]
+    address: Option<String>,
+    #[structopt(long="database-url")]
+    database_url: Option<String>,
 }

@@ -58,7 +58,7 @@ pub fn test_handler(state: State<AppState>) -> FutureResponse<HttpResponse> {
         .and_then(|db_response| {
             match db_response {
                 Ok(n) => Ok(HttpResponse::Ok().json(n)),
-                Err(_) => Ok(HttpResponse::NotFound().finish()),
+                Err(err) => Ok(HttpResponse::NotFound().json(err.to_string())),
             }
         })
         .responder()
