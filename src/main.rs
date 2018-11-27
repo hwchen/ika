@@ -24,10 +24,8 @@ fn main() -> Result<(), Error> {
     dotenv().ok();
     let opt = Opt::from_args();
 
-    // add option in structopt
     let server_addr = opt.address.unwrap_or("127.0.0.1:4000".to_owned());
 
-    // add option in structopt
     let pg_database_url = env::var("DATABASE_URL")
         .or(opt.database_url.ok_or(format_err!("")))
         .expect("No DATABASE_URL Found");
