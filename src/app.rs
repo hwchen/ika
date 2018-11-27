@@ -18,7 +18,7 @@ pub fn create_app(db: Addr<PgExecutor>) -> App<AppState> {
         .resource("/", |r| {
             r.method(Method::GET).with(index_handler)
         })
-        .resource("/test/", |r| {
+        .resource("/test/{schema}/{table}", |r| {
             r.method(Method::GET).with(test_handler)
         })
 }
@@ -28,10 +28,12 @@ use actix_web::{
     FutureResponse,
     HttpRequest,
     HttpResponse,
+    Path,
     Result as ActixResult,
     State,
 };
 use futures::future::Future;
+use log::*;
 
 pub fn index_handler(_req: HttpRequest<AppState>) -> ActixResult<HttpResponse> {
     Ok(HttpResponse::Ok().json(
@@ -48,12 +50,17 @@ struct Status {
     version: String,
 }
 
-pub fn test_handler(state: State<AppState>) -> FutureResponse<HttpResponse> {
+pub fn test_handler(
+    (state, schema_table): (State<AppState>, Path<(String, String)>)
+    ) -> FutureResponse<HttpResponse>
+{
+    let (schema, table) = schema_table.into_inner();
+    info!("schema: {}, table: {}", schema, table);
     use crate::pg::PgTest;
 
     state
         .db
-        .send(PgTest{})
+        .send(PgTest{ schema, table })
         .from_err()
         .and_then(|db_response| {
             match db_response {

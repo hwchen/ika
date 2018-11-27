@@ -16,6 +16,8 @@ impl Actor for PgExecutor {
 }
 
 pub struct PgTest {
+    pub schema: String,
+    pub table: String,
 }
 
 impl Message for PgTest {
@@ -25,10 +27,15 @@ impl Message for PgTest {
 impl Handler<PgTest> for PgExecutor {
     type Result = Result<i32, Error>;
 
-    fn handle(&mut self, _msg: PgTest, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: PgTest, _: &mut Self::Context) -> Self::Result {
         let conn = self.0.get()?;
 
-        let res = &conn.query("SELECT st, agep FROM pums.ztest_pums_5 LIMIT 5", &[])?;
+        let query = format!("select st, agep from {}.{} limit 5",
+            msg.schema,
+            msg.table,
+        );
+
+        let res = &conn.query(&query, &[])?;
 
         let mut agep: i32 = 0;
         for row in res {
