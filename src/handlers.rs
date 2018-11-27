@@ -77,7 +77,7 @@ pub struct QueryOpt {
 }
 
 // only aggregating one column right now
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub enum Agg{
     Sum(usize),
     Count(usize),
