@@ -5,6 +5,13 @@ This software is based on the ideas of postgrest, in rust.
 
 One goal is to explore the line between REST api and olap-type capabilities such as aggregation, based only on the metadata provided in postgres.
 
+# Usage
+
+To run the server (also check justfile if you have `just` and `watchexec` installed:
+```
+$ cargo build && RUST_LOG=info ./target/debug/ika
+```
+
 Here's a test `curl`, all query params are required currently:
 ```
 curl "127.0.0.1:4000/test/pums/ztest_pums_5?select=st,agep&group_by=0&agg=sum.1"
