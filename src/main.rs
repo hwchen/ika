@@ -12,6 +12,7 @@ use std::env;
 use structopt::StructOpt;
 
 mod app;
+mod handlers;
 mod pg;
 
 use crate::pg::PgExecutor;

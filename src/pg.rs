@@ -9,7 +9,7 @@ use log::*;
 use r2d2::Pool;
 use r2d2_postgres::PostgresConnectionManager;
 
-use crate::app::Agg;
+use crate::handlers::Agg;
 
 pub struct PgExecutor(pub Pool<PostgresConnectionManager>);
 
