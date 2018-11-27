@@ -59,10 +59,23 @@ pub fn test_handler(
     info!("schema: {}, table: {}", schema, table);
     use crate::pg::PgQuery;
 
+    let (agg_type, col_idx) = match &query.agg.split('.').collect::<Vec<_>>()[..2] {
+        &[agg_type, col_idx] => (agg_type, col_idx),
+            _ => panic!("incorrect syntax for agg"),
+    };
+
+    let agg = match agg_type {
+        "sum" => Agg::Sum(col_idx.parse().expect("not a num")),
+        "count" => Agg::Count(col_idx.parse().expect("not a num")),
+        _ => panic!("agg type not supported"),
+    };
+
     let pg_query = PgQuery {
         schema,
         table,
         select: query.select.to_owned(),
+        group_by: query.group_by,
+        agg,
     };
 
     state
@@ -81,4 +94,14 @@ pub fn test_handler(
 #[derive(Debug, Deserialize)]
 pub struct QueryOpt {
     select: String,
+    group_by: usize,
+    agg: String,
 }
+
+// only aggregating one column right now
+#[derive(Debug, Deserialize)]
+pub enum Agg{
+    Sum(usize),
+    Count(usize),
+}
+
