@@ -6,6 +6,13 @@ This software is based on the ideas of postgrest, in rust.
 One goal is to explore the line between REST api and olap-type capabilities such as aggregation, based only on the metadata provided in postgres.
 
 # Usage
+Uses rust 2018 edition, which is (as of nov 26 2018) nightly only. Will be stable as of Dec 6.
+
+So make sure you:
+```
+$ rustup install nightly
+$ rustup default nightly
+```
 
 To run the server (also check justfile if you have `just` and `watchexec` installed:
 ```
