@@ -13,6 +13,9 @@ use log::*;
 use serde_derive::{Serialize, Deserialize};
 
 use crate::app::AppState;
+use crate::pg::PgQuery;
+
+const DEFAULT_QUERY_LIMIT: u16 = 100;
 
 pub fn index_handler(_req: HttpRequest<AppState>) -> ActixResult<HttpResponse> {
     Ok(HttpResponse::Ok().json(
@@ -35,7 +38,6 @@ pub fn test_handler(
 {
     let (schema, table) = schema_table.into_inner();
     info!("schema: {}, table: {}", schema, table);
-    use crate::pg::PgQuery;
 
     let (agg_type, col_idx) = match &query.agg.split('.').collect::<Vec<_>>()[..2] {
         &[agg_type, col_idx] => (agg_type, col_idx),
@@ -53,6 +55,10 @@ pub fn test_handler(
         table,
         select: query.select.to_owned(),
         group_by: query.group_by,
+        limit: match query.limit {
+            None => DEFAULT_QUERY_LIMIT,
+            Some(n_results) => n_results
+        },
         agg,
     };
 
@@ -73,6 +79,7 @@ pub fn test_handler(
 pub struct QueryOpt {
     select: String,
     group_by: usize,
+    limit: Option<u16>,
     agg: String,
 }
 
@@ -82,5 +89,3 @@ pub enum Agg{
     Sum(usize),
     Count(usize),
 }
-
-
